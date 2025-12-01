@@ -239,17 +239,16 @@ def setup_handlers(bot_instance, admin_ids, required_channel, contact_bot):
                 else:
                     BOT.send_message(c.message.chat.id, "More options:", reply_markup=loot_actions_kb(lid))
                 return
-                if data == "menu_doubt":
-                  MY_CONTACT = "@Beyond_Unknown1"  # Your username
-                  BOT.edit_message_text(
+        
+            if data == "menu_doubt":
+                MY_CONTACT = "@Beyond_Unknown1"  # Your username
+                BOT.edit_message_text(
                     f"❓ For doubts contact:\n{MY_CONTACT}\n{CONTACT_BOT}",
                     c.message.chat.id,
                     c.message.message_id,
                     reply_markup=back_button("back_main")
-                  )
-                  return
-
-            
+                )
+                return
 
             if data == "menu_admin":
                 if not is_admin(uid):
