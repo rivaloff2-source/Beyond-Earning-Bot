@@ -234,11 +234,12 @@ def setup_handlers(bot_instance, admin_ids, required_channel, contact_bot):
                         else:
                             BOT.send_message(c.message.chat.id, item["text"])
                 
-            if is_admin(uid):
-                BOT.send_message(c.message.chat.id, "Use admin panel to delete or add more.", reply_markup=loot_actions_kb(lid))
-            else:
-                BOT.send_message(c.message.chat.id, "More options:", reply_markup=loot_actions_kb(lid))
-        
+               if is_admin(uid):
+                   BOT.send_message(c.message.chat.id, "Use admin panel to delete or add more.", reply_markup=loot_actions_kb(lid))
+               else:
+                   BOT.send_message(c.message.chat.id, "More options:", reply_markup=loot_actions_kb(lid))
+               return
+            
             if data == "menu_doubt":
                 MY_CONTACT = "@Beyond_Unknown1"  # Your username
                 BOT.edit_message_text(
@@ -248,7 +249,6 @@ def setup_handlers(bot_instance, admin_ids, required_channel, contact_bot):
                     reply_markup=back_button("back_main")
                 )
                 return
-            return
 
             if data == "menu_admin":
                 if not is_admin(uid):
