@@ -187,57 +187,58 @@ def setup_handlers(bot_instance, admin_ids, required_channel, contact_bot):
                 lid = int(lid)
                 loot = db.get_loot(lid)
                 medias = db.get_media(lid, kind)
+
                 if not medias:
                     BOT.answer_callback_query(c.id, "No items found.")
                     BOT.send_message(c.message.chat.id, "No items found.", reply_markup=loot_actions_kb(lid))
                     return
+
                 BOT.answer_callback_query(c.id)
-                
-                # Send video with description as caption, or proofs as media group
+
+                # VIDEO LOOTS
                 if kind == "video":
-                    # For videos: send with description
                     for idx, mrow in enumerate(medias):
                         mid, _, mtype, file_id, link, text_msg = mrow
-                        caption = None
-                        if idx == 0:
-                            caption = f"{loot[2]}"
-                        send_media(c.message.chat.id, {"type": mtype, "file_id": file_id, "link": link, "text": text_msg}, caption=caption)
-                else:
-                    # For proofs: send all file-type media as media group (up to 10)
-                    file_medias = []
-                    text_links = []
-                    
-                    for mrow in medias:
-                        mid, _, mtype, file_id, link, text_msg = mrow
-                        if mtype == "file":
-                            # Only media items (photos, videos, docs)
-                            if len(file_medias) < 10:  # Telegram limit is 10
-                                try:
-                                    file_medias.append(telebot.types.InputMediaPhoto(file_id))
-                                except:
-                                    file_medias.append(telebot.types.InputMediaDocument(file_id))
-                        else:
-                            # Collect text and links to send separately
-                            text_links.append({"type": mtype, "link": link, "text": text_msg})
-                    
-                    # Send all files as media group
-                    if file_medias:
+                        caption = loot[2] if idx == 0 else None
+                        send_media(
+                            c.message.chat.id,
+                            {
+                                "type": mtype,
+                                "file_id": file_id,
+                                "link": link,
+                                "text": text_msg
+                            },
+                            caption=caption
+                        )
+                    return
+
+                # PROOFS (owner/sub)
+                file_group = []
+                other_msgs = []
+
+                for mid, _, mtype, file_id, link, text_msg in medias:
+                    if mtype == "file":
                         try:
-                            BOT.send_media_group(c.message.chat.id, file_medias)
-                        except Exception as ex:
-                            print("send_media_group error:", ex)
-                    
-                    # Send text/links separately
-                    for item in text_links:
-                        if item["type"] == "link":
-                            BOT.send_message(c.message.chat.id, item["link"])
-                        else:
-                            BOT.send_message(c.message.chat.id, item["text"])
-                
-            if is_admin(uid):
-               BOT.send_message(c.message.chat.id, "Use admin panel to delete or add more.", reply_markup=loot_actions_kb(lid))
-            else:
-               BOT.send_message(c.message.chat.id, "More options:", reply_markup=loot_actions_kb(lid))
+                            file_group.append(telebot.types.InputMediaPhoto(file_id))
+                        except:
+                            file_group.append(telebot.types.InputMediaDocument(file_id))
+                    else:
+                        other_msgs.append({"type": mtype, "link": link, "text": text_msg})
+
+                if file_group:
+                    try:
+                        BOT.send_media_group(c.message.chat.id, file_group)
+                    except Exception as ex:
+                        print("media_group error:", ex)
+
+                for item in other_msgs:
+                    if item["type"] == "link":
+                        BOT.send_message(c.message.chat.id, item["link"])
+                    else:
+                        BOT.send_message(c.message.chat.id, item["text"])
+
+                return
+
                   
             if data == "menu_doubt":
                 MY_CONTACT = "@Beyond_Unknown1"  # Your username
